@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Professional DCA Position Calculator</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Use Inter font family -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --accent-primary: #fbbf24;
+            --accent-secondary: #f59e0b;
+            --card-bg: rgba(30, 41, 59, 0.8);
+            --border-color: rgba(251, 191, 36, 0.2);
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #fffef7;
+            --bg-secondary: #fefce8;
+            --text-primary: #1f2937;
+            --text-secondary: #64748b;
+            --accent-primary: #d97706;
+            --accent-secondary: #f59e0b;
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --border-color: rgba(217, 119, 6, 0.2);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: 
+                linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.95) 50%, rgba(51, 65, 85, 0.95) 100%),
+                radial-gradient(circle at 20% 50%, rgba(251, 191, 36, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(245, 158, 11, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(34, 197, 94, 0.05) 0%, transparent 50%),
+                url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(251,191,36,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            background-size: cover, cover, cover, cover, 50px 50px;
+            background-position: center, center, center, center, center;
+            background-attachment: fixed;
+            background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, repeat;
+            min-height: 100vh;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        [data-theme="light"] body {
+            background: 
+                linear-gradient(135deg, rgba(255, 254, 247, 0.95) 0%, rgba(254, 252, 232, 0.95) 50%, rgba(254, 243, 199, 0.95) 100%),
+                radial-gradient(circle at 20% 50%, rgba(217, 119, 6, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(245, 158, 11, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(34, 197, 94, 0.03) 0%, transparent 50%),
+                url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(217,119,6,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+        }
+        .input-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            transition: color 0.15s ease-in-out; 
+        }
+        .input-label:hover {
+            color: #d97706;
+        }
+
+        .input-field {
+            background: var(--card-bg);
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1.5px solid var(--border-color);
+            border-radius: 0.75rem;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), inset 0 1px 2px rgba(0, 0, 0, 0.02);
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        .input-field::placeholder {
+            color: var(--text-secondary);
+            font-weight: 400;
+            opacity: 0.7;
+            text-align: center;
+        }
+
+        .input-field:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06), inset 0 1px 2px rgba(0, 0, 0, 0.02);
+        }
+
+        .input-field:focus-visible {
+            outline: none;
+            border-color: #d97706;
+            box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
+            transform: translateY(-1px);
+        }
+
+        .input-field[aria-invalid="true"] {
+            border-color: #ef4444;
+            background: linear-gradient(145deg, #fef2f2 0%, #fefefe 100%);
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+        }
+
+        .result-card {
+            padding: 0.875rem;
+            border-radius: 0.75rem;
+            border-left-width: 3px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 0.25rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+            box-shadow: 
+                0 2px 4px -1px rgba(0, 0, 0, 0.05),
+                0 1px 2px -1px rgba(0, 0, 0, 0.03),
+                inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .result-card:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 
+                0 10px 25px -3px rgba(0, 0, 0, 0.08),
+                0 4px 6px -2px rgba(0, 0, 0, 0.03),
+                inset 0 1px 0 0 rgba(255, 255, 255, 0.15);
+        }
+
+        .result-value-text {
+            font-size: 1.375rem;
+            font-weight: 700;
+            line-height: 1.75rem;
+            letter-spacing: -0.025em;
+        }
+
+        #trad.result-value-text {
+            font-size: 1.625rem;
+            font-weight: 800;
+            letter-spacing: -0.05em;
+        }
+
+        .helper-text {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+            line-height: 1.3;
+            font-weight: 400;
+        }
+
+        /* --- Custom Animation Keyframes --- */
+        @keyframes resultReveal {
+            0% {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Utility class to apply the staggered animation to result cards */
+        .result-card.animate-reveal {
+            animation: resultReveal 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+        }
+
+        /* Floating Elements Animation */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-10px) rotate(1deg); }
+            66% { transform: translateY(-5px) rotate(-1deg); }
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 5px rgba(251, 191, 36, 0.3); }
+            50% { box-shadow: 0 0 20px rgba(251, 191, 36, 0.6), 0 0 30px rgba(251, 191, 36, 0.3); }
+        }
+
+        @keyframes slide-in {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes chart-line {
+            0% { stroke-dashoffset: 1000; }
+            100% { stroke-dashoffset: 0; }
+        }
+
+        .floating-crypto {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .glow-effect {
+            animation: pulse-glow 3s ease-in-out infinite;
+        }
+
+        .slide-in {
+            animation: slide-in 0.6s ease-out forwards;
+        }
+
+        /* Dark Mode Toggle */
+        .theme-toggle {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 50px;
+            padding: 6px 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Mobile Responsive Styles */
+        @media (max-width: 640px) {
+            .theme-toggle {
+                top: 8px;
+                right: 8px;
+                padding: 6px 10px;
+                font-size: 0.75rem;
+            }
+            .theme-toggle svg {
+                width: 14px;
+                height: 14px;
+            }
+            
+            /* Mobile-optimized main container */
+            body {
+                padding: 1rem 0.5rem;
+                padding-top: 3rem;
+            }
+            
+            /* Mobile input optimizations */
+            .crypto-input {
+                font-size: 16px !important; /* Prevents zoom on iOS */
+                padding: 0.875rem 1rem;
+                min-height: 48px;
+            }
+            
+            /* Mobile-friendly buttons */
+            .mobile-btn {
+                min-height: 48px;
+                font-size: 0.875rem;
+                padding: 0.75rem 1rem;
+            }
+            
+            /* Mobile card spacing */
+            .mobile-card {
+                padding: 1rem;
+                margin-bottom: 1rem;
+            }
+            
+            /* Mobile typography */
+            .mobile-header {
+                font-size: 1.25rem;
+                line-height: 1.3;
+            }
+            
+            /* Mobile result cards */
+            .mobile-result-grid {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            /* Extra small mobile devices */
+            .theme-toggle {
+                padding: 4px 8px;
+            }
+            
+            body {
+                padding: 0.75rem 0.25rem;
+                padding-top: 2.5rem;
+            }
+            
+            .crypto-input {
+                font-size: 16px !important; /* Prevents zoom on iOS */
+                padding: 1rem;
+                min-height: 52px;
+            }
+            
+            .mobile-header {
+                font-size: 1.125rem;
+            }
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Enhanced Card Styling */
+        .crypto-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            backdrop-filter: blur(15px);
+            transition: all 0.3s ease;
+        }
+
+        .crypto-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            border-color: var(--accent-primary);
+        }
+
+        /* Enhanced Input Styling */
+        .crypto-input {
+            background: var(--card-bg);
+            border: 1.5px solid var(--border-color);
+            color: var(--text-primary);
+            backdrop-filter: blur(10px);
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+            transition: all 0.3s ease;
+            font-size: 16px; /* Prevents mobile zoom */
+            font-weight: 500;
+            text-align: center;
+            line-height: 1.5;
+            width: 100%;
+        }
+
+        .crypto-input::placeholder {
+            color: var(--text-secondary);
+            font-weight: 400;
+            opacity: 0.7;
+            text-align: center;
+        }
+
+        .crypto-input:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.1);
+            outline: none;
+            text-align: left;
+        }
+
+        .crypto-input:not(:placeholder-shown) {
+            text-align: left;
+        }
+
+        .crypto-input:placeholder-shown {
+            text-align: center;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-primary);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-secondary);
+        }
+    </style>
+</head>
+<body class="p-3 lg:p-6 min-h-screen flex items-start justify-center pt-16 pb-8" data-theme="dark">
+
+    <!-- Dark Mode Toggle -->
+    <div class="theme-toggle" onclick="toggleTheme()">
+        <div class="flex items-center gap-1 sm:gap-2">
+            <svg id="sun-icon" class="w-3 h-3 sm:w-4 sm:h-4 text-yellow-500 hidden" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"/>
+            </svg>
+            <svg id="moon-icon" class="w-3 h-3 sm:w-4 sm:h-4 text-slate-300" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
+            </svg>
+            <span class="text-xs font-semibold text-current hidden sm:inline" id="theme-text">Dark</span>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <main class="w-full max-w-6xl crypto-card shadow-2xl rounded-2xl sm:rounded-3xl p-3 sm:p-4 lg:p-6 border-t-[6px] border-yellow-500 transform hover:shadow-3xl transition-all duration-500 hover:scale-[1.01] slide-in floating-crypto mx-2 sm:mx-auto" role="main">
+        
+        <!-- Header Section -->
+        <div class="crypto-card rounded-xl sm:rounded-2xl p-3 sm:p-4 mb-3 sm:mb-4 shadow-inner backdrop-blur-sm glow-effect">
+            <h1 class="text-lg sm:text-xl lg:text-2xl mobile-header font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-amber-400 mb-1 text-center tracking-tight uppercase">
+                DCA POSITION CALCULATOR
+            </h1>
+            <p class="text-center text-xs sm:text-sm font-semibold text-yellow-400/80 mb-0 tracking-wide uppercase">
+                HELA TRADING COMMUNITY
+            </p>
+            <!-- Crypto Icons Animation -->
+            <div class="flex justify-center mt-2 space-x-2">
+                <div class="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
+                <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse" style="animation-delay: 0.2s"></div>
+                <div class="w-2 h-2 bg-blue-400 rounded-full animate-pulse" style="animation-delay: 0.4s"></div>
+            </div>
+        </div>
+
+
+        <!-- Error Message Display -->
+        <div id="error-message" class="bg-gradient-to-r from-red-50 to-rose-50 border border-red-200/60 text-red-700 p-3 rounded-xl mb-4 hidden shadow-sm" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="flex items-start gap-3">
+                <svg class="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <div class="flex-1">
+                    <p class="font-semibold text-red-800">Input Error</p>
+                    <p id="error-text" class="text-sm text-red-600 mt-1">Please ensure all values are valid numbers greater than zero.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Fields -->
+        <form id="dca-form" class="space-y-3 sm:space-y-4" novalidate>
+        <div id="input-section" class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+            
+            <!-- Section 1: Entry Details -->
+            <div class="crypto-card mobile-card rounded-xl sm:rounded-2xl p-4 sm:p-5 shadow-sm slide-in" style="animation-delay: 0.1s">
+                <h2 class="text-sm sm:text-base font-bold mb-3 sm:mb-4 tracking-wide flex items-center gap-2" style="color: var(--text-primary)">
+                    <div class="w-1.5 h-3 sm:h-4 bg-gradient-to-b from-yellow-400 to-amber-400 rounded-full"></div>
+                    Current Position Details
+                </h2>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-2 gap-3 sm:gap-4">
+                    <!-- Volume & Quota Column -->
+                    <div class="space-y-3 sm:space-y-4">
+                        <div class="flex flex-col">
+                            <label for="vol" class="input-label text-xs sm:text-sm mb-2" style="color: var(--text-primary)">
+                                <svg class="h-3 w-3 text-yellow-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 2v20M17 5H7l-3 5h20l-3-5z"/><path d="M12 2v20M12 2c-3.3-1.6-6-2-8-2M12 22c3.3 1.6 6 2 8 2M18 10h-12"/></svg>
+                                Volume (Contracts)
+                            </label>
+                            <input type="number" id="vol" class="crypto-input" placeholder="e.g., 12.5" min="0" inputmode="decimal" aria-describedby="vol-help">
+                            <p id="vol-help" class="helper-text text-xs mt-1 sm:mt-2">Optional. Contracts currently open.</p>
+                        </div>
+                        <div class="flex flex-col">
+                            <label for="quo" class="input-label text-xs sm:text-sm mb-2" style="color: var(--text-primary)">
+                                <svg class="h-3 w-3 text-yellow-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><path d="M16 8h-3a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h3m-5-8h1m-1 8h1"/></svg>
+                                Quota (Total Cost)
+                            </label>
+                            <input type="number" id="quo" class="crypto-input" placeholder="e.g., 12,500" min="0" inputmode="decimal" aria-describedby="quo-help">
+                            <p id="quo-help" class="helper-text text-xs mt-1 sm:mt-2">Optional. Total cost basis allocated.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Average Price & Leverage Column -->
+                    <div class="space-y-3 sm:space-y-4">
+                        <div class="flex flex-col">
+                            <label for="avg" class="input-label text-xs sm:text-sm mb-2" style="color: var(--text-primary)">
+                                <svg class="h-3 w-3 text-yellow-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 3v18h18"/><path d="m3 9 9 9 7-7 3 3"/></svg>
+                                Average Price
+                            </label>
+                            <input type="number" id="avg" class="crypto-input" placeholder="e.g., 102.35" min="0" inputmode="decimal" aria-describedby="avg-help">
+                            <p id="avg-help" class="helper-text text-xs mt-1 sm:mt-2">Optional. Current weighted average.</p>
+                        </div>
+                        <div class="flex flex-col">
+                            <label for="lav" class="input-label text-xs sm:text-sm mb-2" style="color: var(--text-primary)">
+                                <svg class="h-3 w-3 text-yellow-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 20V6m-12 7V4m9 17-6-6"/></svg>
+                                Leverage (X)
+                            </label>
+                            <input type="number" id="lav" class="crypto-input" placeholder="e.g., 10" min="1" step="1" inputmode="numeric" aria-describedby="lav-help" required>
+                            <p id="lav-help" class="helper-text text-xs mt-1 sm:mt-2">Required. Enter leverage multiplier.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 2: Positioning -->
+            <div class="crypto-card rounded-2xl p-5 shadow-sm slide-in" style="animation-delay: 0.2s">
+                <h2 class="text-base font-bold mb-4 tracking-wide flex items-center gap-2" style="color: var(--text-primary)">
+                    <div class="w-1.5 h-4 bg-gradient-to-b from-amber-400 to-yellow-400 rounded-full"></div>
+                    Adjustment Target
+                </h2>
+                
+                <!-- Input Group: Current Price & Expected Price -->
+                <div class="grid grid-cols-1 sm:grid-cols-1 xl:grid-cols-2 gap-3 sm:gap-4">
+                    <div class="flex flex-col">
+                        <label for="cur" class="input-label text-xs sm:text-sm mb-2" style="color: var(--text-primary)">
+                            <svg class="h-3 w-3 text-yellow-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="m16 6-4-4-4 4"/></svg>
+                            Current Market Price
+                        </label>
+                        <input type="number" id="cur" class="crypto-input" placeholder="e.g., 98.25" min="0" inputmode="decimal" aria-describedby="cur-help" required>
+                        <p id="cur-help" class="helper-text text-xs mt-1 sm:mt-2">Required. Current market price.</p>
+                    </div>
+                    <div class="flex flex-col">
+                        <label for="exp" class="input-label text-xs sm:text-sm font-bold mb-2" style="color: var(--accent-primary)">
+                            <svg class="h-3 w-3 text-amber-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                            Target Average Price (Expected)
+                        </label>
+                        <input type="number" id="exp" class="crypto-input font-semibold glow-effect" placeholder="e.g., 95.00" min="0" inputmode="decimal" aria-describedby="exp-help" required>
+                        <p id="exp-help" class="helper-text text-xs font-medium mt-1 sm:mt-2" style="color: var(--accent-secondary)">Required. Desired new average price.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="crypto-card rounded-xl sm:rounded-2xl p-3 sm:p-4 shadow-sm mt-4 sm:mt-6 slide-in" style="animation-delay: 0.3s">
+            <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                <button type="button" id="calculate-btn" onclick="calculateDCA()"
+                    class="group flex-1 bg-gradient-to-r from-yellow-500 via-amber-500 to-yellow-600 hover:from-yellow-600 hover:via-amber-600 hover:to-yellow-700 text-white font-bold py-3 sm:py-2.5 px-4 sm:px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 ease-out hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-yellow-500/30 tracking-wide relative overflow-hidden glow-effect touch-manipulation">
+                    <span class="relative z-10 flex items-center justify-center gap-2 text-xs sm:text-sm">
+                        <svg class="w-4 h-4 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                        </svg>
+                        Calculate Adjustment
+                    </span>
+                    <div class="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-out"></div>
+                </button>
+                <button type="button" id="reset-btn" onclick="resetCalculator()"
+                    class="group sm:w-auto px-4 sm:px-6 bg-gradient-to-r from-slate-100 to-slate-200 hover:from-slate-200 hover:to-slate-300 text-slate-700 font-semibold py-3 sm:py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 ease-out focus:outline-none focus:ring-3 focus:ring-slate-300/50 hover:scale-[1.01] touch-manipulation">
+                    <span class="flex items-center justify-center gap-2 text-xs sm:text-sm">
+                        <svg class="w-3 h-3 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                        </svg>
+                        Reset Fields
+                    </span>
+                </button>
+            </div>
+        </div>
+        </form>
+
+        <!-- Calculation Results -->
+        <div class="mt-8 space-y-4" aria-live="polite" role="status">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-1.5 h-5 bg-gradient-to-b from-yellow-400 to-amber-400 rounded-full"></div>
+                <h2 class="text-lg font-bold" style="color: var(--text-primary)">Results Summary</h2>
+                <div class="flex-1 h-px bg-gradient-to-r from-yellow-400/30 to-transparent"></div>
+            </div>
+
+            <!-- Result Cards -->
+            <div id="results-card-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                
+                <!-- Trade Direction -->
+                <div id="trad-card" class="result-card bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-100 border-blue-400 shadow-lg" role="group" aria-labelledby="trad-card-label" aria-live="polite">
+                    <span id="trad-card-label" class="text-xs font-semibold text-blue-600 uppercase flex items-center gap-1 sm:gap-2 tracking-wider">
+                        <svg class="h-3 w-3 sm:h-4 sm:w-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>
+                        <span class="hidden sm:inline">Trade Direction</span>
+                        <span class="sm:hidden">Direction</span>
+                    </span>
+                    <span id="trad" class="result-value-text text-blue-800 transition duration-300 mt-1">---</span>
+                </div>
+
+                <!-- Required Volume -->
+                <div id="adj-card" class="result-card bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 border-emerald-400 shadow-lg" role="group" aria-labelledby="adj-card-label" aria-live="polite">
+                    <span id="adj-card-label" class="text-xs font-semibold text-emerald-600 uppercase flex items-center gap-1 sm:gap-2 tracking-wider">
+                        <svg class="h-3 w-3 sm:h-4 sm:w-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 8 12 3 17 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+                        <span class="hidden sm:inline">Required Volume</span>
+                        <span class="sm:hidden">Volume</span>
+                    </span>
+                    <span id="adj" class="result-value-text text-emerald-800 transition duration-300 mt-1">0.0000</span>
+                </div>
+            
+            
+                 <!-- New Position Value -->
+                <div id="posa-card" class="result-card bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 border-amber-400 shadow-lg" role="group" aria-labelledby="posa-card-label" aria-live="polite">
+                    <span id="posa-card-label" class="text-xs font-semibold text-amber-600 uppercase flex items-center gap-1 sm:gap-2 tracking-wider">
+                        <svg class="h-3 w-3 sm:h-4 sm:w-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H7l-3 5h20l-3-5z"/><path d="M12 2v20M12 2c-3.3-1.6-6-2-8-2M12 22c3.3 1.6 6 2 8 2M18 10h-12"/></svg>
+                        <span class="hidden sm:inline">New Total Value</span>
+                        <span class="sm:hidden">Total Value</span>
+                    </span>
+                    <span id="posa" class="result-value-text text-amber-800 transition duration-300 mt-1">$0.00</span>
+                </div>
+
+                <!-- Required Margin -->
+                <div id="amov-card" class="result-card bg-gradient-to-br from-purple-50 via-violet-50 to-indigo-50 border-purple-400 shadow-lg" role="group" aria-labelledby="amov-card-label" aria-live="polite">
+                    <span id="amov-card-label" class="text-xs font-semibold text-purple-600 uppercase flex items-center gap-1 sm:gap-2 tracking-wider">
+                        <svg class="h-3 w-3 sm:h-4 sm:w-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12V8H6V4"/><path d="M4 12V8"/><path d="M10 4V8"/><path d="M4 8v12h16V8"/></svg>
+                        <span class="hidden sm:inline">Required Margin</span>
+                        <span class="sm:hidden">Margin</span>
+                    </span>
+                    <span id="amov" class="result-value-text text-purple-800 transition duration-300 mt-1">$0.00</span>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        // Array of result card IDs for easier manipulation
+        const RESULT_CARD_IDS = ['trad-card', 'adj-card', 'posa-card', 'amov-card'];
+        const FIELD_IDS = ['vol', 'quo', 'avg', 'lav', 'cur', 'exp'];
+
+        // Function to apply the reveal animation to all result cards
+        function applyResultAnimation() {
+            RESULT_CARD_IDS.forEach((id, index) => {
+                const card = document.getElementById(id);
+                if (!card) return;
+
+                // 1. Remove the class to allow the animation to re-trigger
+                card.classList.remove('animate-reveal');
+                card.style.opacity = '0'; // Ensure it starts invisible before animation
+                
+                // 2. Use requestAnimationFrame to ensure the browser registers the class removal and opacity change
+                requestAnimationFrame(() => {
+                    // Apply staggered delay for a "wave" effect
+                    card.style.animationDelay = `${index * 0.08}s`; 
+                    card.classList.add('animate-reveal');
+                });
+            });
+        }
+
+        // Function to reset all input fields and results
+        function resetCalculator() {
+            FIELD_IDS.forEach(id => {
+                const input = document.getElementById(id);
+                if (!input) return;
+                input.value = '';
+                input.setAttribute('aria-invalid', 'false');
+            });
+            document.getElementById("trad").innerHTML = "---";
+            document.getElementById("adj").innerHTML = "0.0000"; // Reset to 4 decimal places
+            document.getElementById("posa").innerHTML = "$0.00";
+            document.getElementById("amov").innerHTML = "$0.00";
+            document.getElementById('error-message').classList.add('hidden');
+            
+            // Reset colors and remove animation class if present
+            
+            // Reset Trade Direction
+            const tradCard = document.getElementById('trad-card');
+            tradCard.className = 'result-card bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-100 border-blue-400 shadow-lg';
+            document.getElementById("trad").className = 'result-value-text text-blue-800 transition duration-300 mt-1';
+            
+            // Reset Required Volume
+            const adjCard = document.getElementById('adj-card');
+            adjCard.className = 'result-card bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 border-emerald-400 shadow-lg';
+            document.getElementById("adj").className = 'result-value-text text-emerald-800 transition duration-300 mt-1';
+            
+            // Reset Financial Cards
+            document.getElementById('posa-card').className = 'result-card bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 border-amber-400 shadow-lg';
+            document.getElementById('amov-card').className = 'result-card bg-gradient-to-br from-purple-50 via-violet-50 to-indigo-50 border-purple-400 shadow-lg';
+
+            // Ensure cards are visible after reset (in case animation opacity stuck)
+            RESULT_CARD_IDS.forEach(id => {
+                document.getElementById(id).classList.remove('animate-reveal');
+                document.getElementById(id).style.opacity = '1';
+                document.getElementById(id).style.animationDelay = '';
+            });
+        }
+
+        /**
+         * Prevent mobile zoom and ensure proper viewport scaling
+         */
+        function preventMobileZoom() {
+            // Add event listeners to all input fields
+            const inputs = document.querySelectorAll('.crypto-input');
+            inputs.forEach(input => {
+                // Prevent zoom on focus
+                input.addEventListener('focus', function() {
+                    const viewport = document.querySelector('meta[name=viewport]');
+                    viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+                });
+                
+                // Reset zoom on blur (when user finishes typing)
+                input.addEventListener('blur', function() {
+                    setTimeout(() => {
+                        const viewport = document.querySelector('meta[name=viewport]');
+                        viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+                        // Force viewport reset
+                        if (window.screen && window.screen.orientation) {
+                            window.scrollTo(0, 0);
+                        }
+                    }, 100);
+                });
+            });
+        }
+
+        /**
+         * The core function that performs the DCA position adjustment calculation and validation.
+         */
+        function calculateDCA() {
+            // Get raw input values
+            const vol_input = document.getElementById("vol").value.trim();
+            const quo_input = document.getElementById("quo").value.trim();
+            const avg_input = document.getElementById("avg").value.trim();
+            const lav_input = document.getElementById("lav").value.trim();
+            const cur_input = document.getElementById("cur").value.trim();
+            const exp_input = document.getElementById("exp").value.trim();
+
+            // Convert to numbers. Note: Number('') is 0, Number('abc') is NaN.
+            const vol = vol_input === '' ? 0 : Number(vol_input);
+            const quo = quo_input === '' ? 0 : Number(quo_input);
+            const avg = avg_input === '' ? 0 : Number(avg_input);
+            const lav = Number(lav_input); 
+            const cur = Number(cur_input);
+            const exp = Number(exp_input);
+            
+            const errorMessageDiv = document.getElementById('error-message');
+            const errorText = document.getElementById('error-text');
+            FIELD_IDS.forEach(id => {
+                const field = document.getElementById(id);
+                if (field) {
+                    field.setAttribute('aria-invalid', 'false');
+                }
+            });
+            
+            // --- 1. Basic Required Field Check (cur, exp, lav must not be empty) ---
+            if (cur_input === '' || exp_input === '' || lav_input === '') {
+                errorMessageDiv.classList.add('hidden');
+                return;
+            }
+
+            // --- 2. Comprehensive Validation (Position & Target) ---
+            let errorFlag = false;
+            let errorFieldId = null;
+            let message = "Please ensure all values are valid numbers.";
+
+            // Check primary target fields (must be > 0 and not NaN)
+            if (cur <= 0 || isNaN(cur)) {
+                message = "Current Market Price must be a valid positive number.";
+                errorFlag = true;
+                errorFieldId = 'cur';
+            } else if (exp <= 0 || isNaN(exp)) {
+                message = "Target Average Price must be a valid positive number.";
+                errorFlag = true;
+                errorFieldId = 'exp';
+            } else if (lav < 1 || isNaN(lav)) {
+                message = "Leverage must be a valid number of 1 or greater.";
+                errorFlag = true;
+                errorFieldId = 'lav';
+            } 
+            // Check optional existing position fields (must not be negative or NaN if entered)
+            else if (vol_input !== '' && (vol < 0 || isNaN(vol))) {
+                message = vol < 0 ? "Volume (Contracts) cannot be negative." : "Volume (Contracts) must be a valid number.";
+                errorFlag = true;
+                errorFieldId = 'vol';
+            } else if (quo_input !== '' && (quo < 0 || isNaN(quo))) {
+                message = quo < 0 ? "Quota (Total Cost) cannot be negative." : "Quota (Total Cost) must be a valid number.";
+                errorFlag = true;
+                errorFieldId = 'quo';
+            } else if (avg_input !== '' && (avg < 0 || isNaN(avg))) {
+                message = avg < 0 ? "Average Price cannot be negative." : "Average Price must be a valid number.";
+                errorFlag = true;
+                errorFieldId = 'avg';
+            }
+            
+            // Handle error state
+            if (errorFlag) {
+                // Clear results and show visual error
+                document.getElementById("trad").innerHTML = "---";
+                document.getElementById("adj").innerHTML = "0.0000";
+                document.getElementById("posa").innerHTML = "$0.00";
+                document.getElementById("amov").innerHTML = "$0.00";
+                
+                errorText.textContent = message;
+                errorMessageDiv.classList.remove('hidden');
+                if (errorFieldId) {
+                    const erroredField = document.getElementById(errorFieldId);
+                    if (erroredField) {
+                        erroredField.setAttribute('aria-invalid', 'true');
+                    }
+                }
+                return;
+            }
+
+            // Hide error message if validation passes
+            errorMessageDiv.classList.add('hidden');
+
+            let cacont; // Contracts/Volume to adjust position
+            let calposa; // Positioning Amount (Total Value)
+            let tradeDirection;
+
+            // --- CORE CALCULATION LOGIC ---
+            if (cur < exp) {
+                // LONG Scenario: Current Price is less than Expected (Target) Price (buying to raise average price)
+                tradeDirection = "LONG";
+                
+                const cacont1 = exp * vol;
+                const cacont2 = quo - cacont1;
+                const cacont3 = exp - cur;
+                
+                // Prevents division by zero if exp === cur, setting adjustment to 0
+                cacont = cacont3 !== 0 ? cacont2 / cacont3 : 0;
+                
+            } else {
+                // SHORT Scenario: Current Price is greater than or equal to Expected (Target) Price
+                tradeDirection = "SHORT";
+
+                const cacont1 = exp * vol;
+                const cacont2 = cacont1 - quo;
+                const cacont3 = cur - exp;
+
+                // Prevents division by zero if cur === exp, setting adjustment to 0
+                cacont = cacont3 !== 0 ? cacont2 / cacont3 : 0;
+            }
+
+            // Calculation for New Positioning Amount (Total Value)
+            calposa = (cacont * cur) + quo;
+
+            // Calculation for Amount from Wallet (Required Margin)
+            const amov = calposa / lav;
+
+            // --- DISPLAY RESULTS & COLORING ---
+            const tradElement = document.getElementById("trad");
+            const tradCard = document.getElementById('trad-card');
+            tradElement.innerHTML = tradeDirection;
+
+            // 1. Trade Direction Coloring (Green for LONG, Red for SHORT)
+            const tradColorClass = tradeDirection === "LONG" ? { cardBg: 'bg-green-50', cardBorder: 'border-green-500', text: 'text-green-800' } :
+                                   tradeDirection === "SHORT" ? { cardBg: 'bg-red-50', cardBorder: 'border-red-500', text: 'text-red-800' } :
+                                   { cardBg: 'bg-blue-50', cardBorder: 'border-blue-500', text: 'text-blue-800' };
+
+            // Reset and apply classes to the Trade Direction card
+            const cardBgMap = {
+                'bg-green-50': 'bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 border-emerald-400',
+                'bg-red-50': 'bg-gradient-to-br from-red-50 via-rose-50 to-pink-50 border-red-400',
+                'bg-blue-50': 'bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-100 border-blue-400'
+            };
+            const gradientBg = cardBgMap[tradColorClass.cardBg] || tradColorClass.cardBg + ' ' + tradColorClass.cardBorder;
+            tradCard.className = `result-card ${gradientBg} shadow-lg`;
+            tradElement.className = `result-value-text ${tradColorClass.text} transition duration-300 mt-1`;
+
+
+            // 2. Required Volume Coloring (Based on positive/negative value)
+            const adjElement = document.getElementById("adj");
+            const adjCard = document.getElementById('adj-card');
+            
+            // FIX: Format volume to 4 decimal places for contracts
+            const cacontf = parseFloat(cacont).toFixed(4); 
+            adjElement.innerHTML = cacontf;
+            
+            const isSellAdjustment = cacont < 0;
+            
+            if (isSellAdjustment) {
+                 // Use Red for selling/closing contracts (negative volume)
+              adjCard.className = 'result-card bg-gradient-to-br from-red-50 via-rose-50 to-pink-50 border-red-400 shadow-lg';
+              adjElement.className = 'result-value-text text-red-800 transition duration-300 mt-1';
+            } else {
+                 // Use Green for buying/adding contracts (positive volume)
+              adjCard.className = 'result-card bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 border-emerald-400 shadow-lg';
+              adjElement.className = 'result-value-text text-emerald-800 transition duration-300 mt-1';
+            }
+
+
+            // 3. New Total Value (Quota) - Fixed to 2 decimal places
+            const posaElement = document.getElementById("posa");
+            const calposaf = parseFloat(calposa).toFixed(2); // FIX: Enforce 2 decimal places
+            posaElement.innerHTML = `$${calposaf}`;
+            
+            // 4. Required Margin (Wallet) - Fixed to 2 decimal places
+            const amovElement = document.getElementById("amov");
+            const amovf = parseFloat(amov).toFixed(2); // FIX: Enforce 2 decimal places
+            amovElement.innerHTML = `$${amovf}`;
+
+            // --- ANIMATION CALL ---
+            applyResultAnimation();
+        }
+
+        let calculateTimer;
+        const inputNodes = document.querySelectorAll('.input-field');
+        const form = document.getElementById('dca-form');
+
+        function scheduleCalculation() {
+            clearTimeout(calculateTimer);
+            calculateTimer = setTimeout(() => {
+                calculateDCA();
+            }, 200);
+        }
+
+        inputNodes.forEach(input => {
+            input.addEventListener('input', scheduleCalculation);
+            input.addEventListener('blur', calculateDCA);
+        });
+
+        if (form) {
+            form.addEventListener('keydown', event => {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    calculateDCA();
+                }
+            });
+        }
+
+        // Dark Mode Toggle Functionality
+        function toggleTheme() {
+            const body = document.body;
+            const sunIcon = document.getElementById('sun-icon');
+            const moonIcon = document.getElementById('moon-icon');
+            const themeText = document.getElementById('theme-text');
+            
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.setAttribute('data-theme', 'light');
+                sunIcon.classList.remove('hidden');
+                moonIcon.classList.add('hidden');
+                themeText.textContent = 'Light';
+                localStorage.setItem('theme', 'light');
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                sunIcon.classList.add('hidden');
+                moonIcon.classList.remove('hidden');
+                themeText.textContent = 'Dark';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // Initialize theme from localStorage
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize mobile zoom prevention
+            preventMobileZoom();
+            
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            const body = document.body;
+            const sunIcon = document.getElementById('sun-icon');
+            const moonIcon = document.getElementById('moon-icon');
+            const themeText = document.getElementById('theme-text');
+            
+            body.setAttribute('data-theme', savedTheme);
+            
+            if (savedTheme === 'light') {
+                sunIcon.classList.remove('hidden');
+                moonIcon.classList.add('hidden');
+                themeText.textContent = 'Light';
+            } else {
+                sunIcon.classList.add('hidden');
+                moonIcon.classList.remove('hidden');
+                themeText.textContent = 'Dark';
+            }
+
+            // Add staggered animation to result cards
+            setTimeout(() => {
+                const cards = document.querySelectorAll('.slide-in');
+                cards.forEach((card, index) => {
+                    setTimeout(() => {
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                    }, index * 100);
+                });
+            }, 100);
+        });
+    </script>
+</body>
+</html>
